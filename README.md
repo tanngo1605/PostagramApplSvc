@@ -10,4 +10,5 @@ To run a typescript file: npx ts-node {fileName}.ts
 
 ## Migrate new schemas from Prisma
 Migrate data: npx prisma migrate dev --name init
+
 Sync data schemas from db: npx prisma db pull
