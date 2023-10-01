@@ -1,9 +1,15 @@
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import prisma from "./prisma/prismaDB"
 
 async function main() {
-  const usersWithPosts = await prisma.user.findMany()
+  const usersWithPosts = await prisma.user.findMany({
+    include:{
+      Post: true,
+      Reaction: true
+    },
+    orderBy:{
+      username: "asc"
+    }
+  })
   console.log(usersWithPosts)
 }
 
