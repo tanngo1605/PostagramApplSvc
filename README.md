@@ -2,6 +2,7 @@
 
 ## Prisma Studio
 Prisma setup: https://www.traversymedia.com/blog/prisma-crash-course
+
 Open Prisma GUI: npx prisma studio
 
 ## Run a typescript file
