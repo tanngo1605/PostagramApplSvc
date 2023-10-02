@@ -17,8 +17,8 @@ model User {
   posts Post[]
   reactions Reaction[]
   comments Comment[]
-  follower Following[] @relation(name: "followee")
-  followee Following[] @relation(name: "follower")
+  followers Following[] @relation(name: "followee")
+  followings Following[] @relation(name: "follower")
   @@index([id, username])
 }
 

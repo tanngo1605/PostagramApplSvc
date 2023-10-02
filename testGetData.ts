@@ -5,8 +5,8 @@ async function main() {
     include: {
       posts: true,
       reactions: true,
-      followee: true,
-      follower: true
+      followings: true,
+      followers: true
     },
   });
   console.log({ usersWithPosts });
