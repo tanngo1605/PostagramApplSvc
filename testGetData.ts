@@ -3,11 +3,10 @@ import prisma from "./prisma/prismaDB";
 async function main() {
   const usersWithPosts = await prisma.user.findMany({
     include: {
-      Post: true,
-      Reaction: true,
-    },
-    orderBy: {
-      username: "asc",
+      posts: true,
+      reactions: true,
+      followee: true,
+      follower: true
     },
   });
   console.log({ usersWithPosts });
@@ -15,7 +14,7 @@ async function main() {
   const posts = await prisma.post.findMany({
     include: {
       author: true,
-      Reaction: true,
+      reactions: true,
     },
   });
 

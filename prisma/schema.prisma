@@ -14,8 +14,11 @@ model User {
   userPassword String
   avatarUrl String? 
   isVerified   Boolean @default(false)
-  Post Post[]
-  Reaction Reaction[]
+  posts Post[]
+  reactions Reaction[]
+  comments Comment[]
+  follower Following[] @relation(name: "followee")
+  followee Following[] @relation(name: "follower")
   @@index([id, username])
 }
 
@@ -26,14 +29,36 @@ model Post{
    createAt DateTime @default(now()) @db.Timestamp()
    authorId Int
    author User @relation(fields: [authorId], references: [id])
-   Reaction Reaction[]
+   reactions Reaction[]
+   comments Comment[]
 }
 
 model Reaction{
   userId Int
-  User User @relation(fields: [userId], references: [id])
-  Post Post @relation(fields: [postId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+  post Post @relation(fields: [postId], references: [id])
   postId Int
   reactionType String
   @@unique([userId, postId])
+}
+
+
+model Comment{
+  id Int @id @default(autoincrement())
+  userId Int
+  user User @relation(fields: [userId], references: [id])
+  post Post @relation(fields: [postId], references: [id])
+  postId Int
+  content String
+  createAt DateTime @default(now()) @db.Timestamp()
+}
+
+model Following{
+  followerId Int
+  follower User @relation(fields: [followerId], references: [id], name: "follower")
+
+  followee User @relation(fields: [followeeId], references: [id], name: "followee")
+  followeeId Int
+  createAt DateTime @default(now()) @db.Timestamp()
+  @@unique([followeeId, followerId])
 }
