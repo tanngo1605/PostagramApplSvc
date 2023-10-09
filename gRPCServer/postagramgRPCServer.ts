@@ -4,6 +4,7 @@ const MY_JWT_SECRET = "MY_JWT_SECRET";
 const PORT = process.env.PORT || 3000;
 const os = require("os");
 const networkInterfaces = os.networkInterfaces();
+const http = require("http");
 import prisma from "../prisma/prismaDB";
 
 const grpc = require("@grpc/grpc-js");
@@ -26,7 +27,7 @@ function sayHello(call: any, callback: any) {
 }
 
 async function getUserToken(call: any, callback: any) {
-  console.log(`request received`)
+  console.log(`request received`);
   const { username, password } = call.request;
   let token: string = "";
   const user = await prisma.user.findFirst({
@@ -56,12 +57,30 @@ Object.keys(networkInterfaces).forEach((ifname) => {
   });
 });
 
+const httpServer = http.createServer((req: any, res: any) => {
+  if (req.method === "GET" && req.url === "/") {
+    // Handle HTTP GET request here
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ message: "HTTP request handled" }));
+  } else {
+    // Handle other requests or respond with 404 Not Found
+    res.writeHead(404, { "Content-Type": "text/plain" });
+    res.end("Not Found");
+  }
+});
+
+// Listen on both HTTP and gRPC ports
+const httpPort = process.env.PORT || 3000;
+httpServer.listen(httpPort, () => {
+  console.log(`HTTP Server listening on port ${httpPort}`);
+});
+
 /**
  * Starts an RPC server that receives requests for the Greeter service at the
  * sample server port
  */
 function main() {
-  const bindAddr = `0.0.0.0:${PORT}`;
+  const bindAddr = `0.0.0.0:50051`;
   const server = new grpc.Server();
   server.addService(postagram_rpc_server.Postagram.service, {
     sayHello: sayHello,
