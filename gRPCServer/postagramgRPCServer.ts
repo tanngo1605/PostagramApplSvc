@@ -80,7 +80,8 @@ httpServer.listen(httpPort, () => {
  * sample server port
  */
 function main() {
-  const bindAddr = `0.0.0.0:50051`;
+  console.log({serverIpAddress})
+  const bindAddr = `0.0.0.0:${httpPort}`;
   const server = new grpc.Server();
   server.addService(postagram_rpc_server.Postagram.service, {
     sayHello: sayHello,
