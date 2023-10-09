@@ -26,6 +26,7 @@ function sayHello(call: any, callback: any) {
 }
 
 async function getUserToken(call: any, callback: any) {
+  console.log(`request received`)
   const { username, password } = call.request;
   let token: string = "";
   const user = await prisma.user.findFirst({
