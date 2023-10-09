@@ -71,26 +71,31 @@ const httpServer = http.createServer((req: any, res: any) => {
 
 // Listen on both HTTP and gRPC ports
 const httpPort = process.env.PORT || 3000;
-httpServer.listen(httpPort, () => {
-  console.log(`HTTP Server listening on port ${httpPort}`);
-});
+// httpServer.listen(httpPort, () => {
+//   console.log(`HTTP Server listening on port ${httpPort}`);
+// });
 
 /**
  * Starts an RPC server that receives requests for the Greeter service at the
  * sample server port
  */
 function main() {
-  console.log({serverIpAddress})
+  console.log({ serverIpAddress });
   const bindAddr = `0.0.0.0:${httpPort}`;
   const server = new grpc.Server();
   server.addService(postagram_rpc_server.Postagram.service, {
     sayHello: sayHello,
     getUserToken: getUserToken,
   });
-  server.bindAsync(bindAddr, grpc.ServerCredentials.createInsecure(), () => {
-    console.info(`Run at bindAddress: ${bindAddr}`);
-    server.start();
-  });
+  server.bindAsync(
+    bindAddr,
+    grpc.ServerCredentials.createInsecure(),
+    (err: any, res: any) => {
+      console.log({ err, res });
+      console.info(`RPC Run at bindAddress: ${bindAddr}`);
+      server.start();
+    }
+  );
 }
 
 main();
