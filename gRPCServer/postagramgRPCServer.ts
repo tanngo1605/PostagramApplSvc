@@ -60,7 +60,7 @@ Object.keys(networkInterfaces).forEach((ifname) => {
  * sample server port
  */
 function main() {
-  const bindAddr = `${serverIpAddress}:${PORT}`;
+  const bindAddr = `0.0.0.0:${PORT}`;
   const server = new grpc.Server();
   server.addService(postagram_rpc_server.Postagram.service, {
     sayHello: sayHello,
