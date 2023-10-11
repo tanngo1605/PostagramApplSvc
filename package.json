@@ -1,7 +1,7 @@
 {
   "name": "postagramapplsvc",
   "version": "1.0.0",
-  "description": "",
+  "description": "This services acts as a middleware and rpc server for OchresSvc",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -15,11 +15,13 @@
     "@grpc/proto-loader": "^0.7.10",
     "@prisma/client": "^5.3.1",
     "@types/express": "^4.17.19",
+    "@types/express-actuator": "^1.8.1",
     "@types/jsonwebtoken": "^9.0.3",
     "@types/morgan": "^1.9.6",
     "@types/node": "^20.7.1",
     "@types/response-time": "^2.3.6",
     "express": "^4.18.2",
+    "express-actuator": "^1.8.4",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
     "prisma": "^5.3.1",
