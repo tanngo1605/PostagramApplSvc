@@ -16,14 +16,12 @@ app.post("/rpc/:rpdMethodId", async (req: Request, res: Response) => {
   switch (rpdMethodId) {
     case "sayHello": {
       const { name } = req.body;
-
-      res.send(rpcMethods.sayHello(name));
-
+      res.send(rpcMethods.sayHello(req.body));
       break;
     }
     case "getUserToken": {
       const { username, password } = req.body;
-      const token = await rpcMethods.getUserToken(username, password);
+      const token = await rpcMethods.getUserToken(req.body);
       res.status(200).json({
         result: token,
       });
@@ -45,14 +43,17 @@ const rpcMethods = {
   getUserToken,
 };
 
-function sayHello(username: string): string {
+function sayHello({ username }: { username: string }): string {
   return "Hello " + username;
 }
 
-async function getUserToken(
-  username: string,
-  password: string
-): Promise<string> {
+async function getUserToken({
+  username,
+  password,
+}: {
+  username: string;
+  password: string;
+}): Promise<string> {
   let token: string = "";
   const user = await prisma.user.findFirst({
     where: {
