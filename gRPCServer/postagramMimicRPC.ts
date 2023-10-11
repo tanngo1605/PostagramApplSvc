@@ -11,9 +11,9 @@ app.use(express.json());
 app.use(logger("dev"));
 app.use(responseTime());
 
-app.post("/rpc/:rpdMethodId", async (req: Request, res: Response) => {
-  const { rpdMethodId } = req.params;
-  switch (rpdMethodId) {
+app.post("/rpc/:rpcMethodId", async (req: Request, res: Response) => {
+  const { rpcMethodId } = req.params;
+  switch (rpcMethodId) {
     case "sayHello": {
       res.send(rpcMethods.sayHello(req.body));
       break;
