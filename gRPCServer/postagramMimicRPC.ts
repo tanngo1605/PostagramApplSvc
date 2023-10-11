@@ -15,12 +15,10 @@ app.post("/rpc/:rpdMethodId", async (req: Request, res: Response) => {
   const { rpdMethodId } = req.params;
   switch (rpdMethodId) {
     case "sayHello": {
-      const { name } = req.body;
       res.send(rpcMethods.sayHello(req.body));
       break;
     }
     case "getUserToken": {
-      const { username, password } = req.body;
       const token = await rpcMethods.getUserToken(req.body);
       res.status(200).json({
         result: token,
