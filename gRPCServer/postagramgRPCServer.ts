@@ -4,7 +4,8 @@ const MY_JWT_SECRET = "MY_JWT_SECRET";
 const PORT = process.env.PORT || 3000;
 const os = require("os");
 const networkInterfaces = os.networkInterfaces();
-const http = require("http");
+//const http = require("http");
+import http from "http";
 import prisma from "../prisma/prismaDB";
 
 const grpc = require("@grpc/grpc-js");
@@ -57,7 +58,7 @@ Object.keys(networkInterfaces).forEach((ifname) => {
   });
 });
 
-const httpServer = http.createServer((req: any, res: any) => {
+const httpServer = http.createServer((req, res) => {
   if (req.method === "GET" && req.url === "/") {
     // Handle HTTP GET request here
     res.writeHead(200, { "Content-Type": "application/json" });
