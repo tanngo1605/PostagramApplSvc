@@ -1,7 +1,7 @@
 const MY_JWT_SECRET = "MY_JWT_SECRET";
 import jwt from "jsonwebtoken";
 import prisma from "../prisma/prismaDB";
-import express, { Request, Response, NextFunction } from "express";
+import express, { Request, Response } from "express";
 import logger from "morgan";
 import actuator from "express-actuator";
 const PORT = process.env.PORT || 3000;
@@ -138,7 +138,7 @@ const rpcMethods: RpcMethodsType = {
 };
 
 type RpcMethodsType = {
-  [key: string]: any;
+  [key: string]: Function;
 };
 
 function sayHello({ username }: { username: string }): string {
