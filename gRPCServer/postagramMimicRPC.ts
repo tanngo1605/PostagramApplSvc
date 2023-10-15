@@ -101,6 +101,11 @@ app.use(
 
 app.post("/rpc/:rpcMethodId", async (req: Request, res: Response) => {
   const { rpcMethodId } = req.params;
+  if (rpcMethods[rpcMethodId] == null) {
+    return res.status(404).json({
+      message: `rpc method: ${rpcMethodId} not found!`,
+    });
+  }
   const result: any = await rpcMethods[rpcMethodId](req.body);
   return res.status(200).json({
     result,
