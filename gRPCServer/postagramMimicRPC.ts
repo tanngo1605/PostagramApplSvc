@@ -1,16 +1,14 @@
 const MY_JWT_SECRET = "MY_JWT_SECRET";
 import jwt from "jsonwebtoken";
 import prisma from "../prisma/prismaDB";
-import express, { Request, Response, NextFunction } from "express";
+import express, { Request, Response } from "express";
 import logger from "morgan";
-import responseTime from "response-time";
 import actuator from "express-actuator";
 const PORT = process.env.PORT || 3000;
 
 const app = express();
 app.use(express.json());
 app.use(logger("dev"));
-app.use(responseTime());
 app.use(
   actuator({
     infoGitMode: "full",
@@ -66,6 +64,36 @@ app.use(
           },
           returnType: "following",
         },
+        getUserPosts: {
+          params: {
+            username: "string",
+          },
+          returnType: "array<post>",
+        },
+        getPostComments: {
+          params: {
+            postId: "number",
+          },
+          returnType: "array<comment>",
+        },
+        getFollowersList: {
+          params: {
+            username: "string",
+          },
+          returnType: "array<follower>",
+        },
+        getFollowingsList: {
+          params: {
+            username: "string",
+          },
+          returnType: "array<followee>",
+        },
+        getPost: {
+          params: {
+            postId: "number",
+          },
+          returnType: "post",
+        },
       },
     },
   })
@@ -73,54 +101,15 @@ app.use(
 
 app.post("/rpc/:rpcMethodId", async (req: Request, res: Response) => {
   const { rpcMethodId } = req.params;
-  switch (rpcMethodId) {
-    case "sayHello": {
-      res.send(rpcMethods.sayHello(req.body));
-      break;
-    }
-    case "getUserToken": {
-      const token = await rpcMethods.getUserToken(req.body);
-      res.status(200).json({
-        result: token,
-      });
-      break;
-    }
-    case "createPost": {
-      const post = await rpcMethods.createPost(req.body);
-      res.status(200).json({
-        result: post,
-      });
-      break;
-    }
-    case "getUserInfo": {
-      const user = await rpcMethods.getUserInfo(req.body);
-      res.status(200).json({
-        result: user,
-      });
-      break;
-    }
-    case "addComment": {
-      const comment = await rpcMethods.addComment(req.body);
-      res.status(200).json({
-        result: comment,
-      });
-      break;
-    }
-    case "addReaction": {
-      const reaction = await rpcMethods.addReaction(req.body);
-      res.status(200).json({
-        result: reaction,
-      });
-      break;
-    }
-    case "addFollowing": {
-      const following = await rpcMethods.addFollowing(req.body);
-      res.status(200).json({
-        result: following,
-      });
-      break;
-    }
+  if (rpcMethods[rpcMethodId] == null) {
+    return res.status(404).json({
+      message: `rpc method: ${rpcMethodId} not found!`,
+    });
   }
+  const result: any = await rpcMethods[rpcMethodId](req.body);
+  return res.status(200).json({
+    result,
+  });
 });
 
 app.get("/rpc/all", (req: Request, res: Response) => {
@@ -138,7 +127,7 @@ process.on("SIGTERM", () => {
   });
 });
 
-const rpcMethods = {
+const rpcMethods: RpcMethodsType = {
   sayHello,
   getUserToken,
   createPost,
@@ -146,6 +135,15 @@ const rpcMethods = {
   addComment,
   addReaction,
   addFollowing,
+  getUserPosts,
+  getPostComments,
+  getFollowersList,
+  getFollowingsList,
+  getPost,
+};
+
+type RpcMethodsType = {
+  [key: string]: Function;
 };
 
 function sayHello({ username }: { username: string }): string {
@@ -199,7 +197,7 @@ async function createPost({
   });
 }
 
-async function getUserInfo(username: string) {
+async function getUserInfo({ username }: { username: string }) {
   return await prisma.user.findFirst({
     where: {
       username: username,
@@ -210,6 +208,13 @@ async function getUserInfo(username: string) {
       displayName: true,
       avatarUrl: true,
       isVerified: true,
+      _count: {
+        select: {
+          followers: true,
+          followings: true,
+          posts: true,
+        },
+      },
     },
   });
 }
@@ -260,6 +265,98 @@ async function addFollowing({
     data: {
       followerId: followerId,
       followeeId: followeeId,
+    },
+  });
+}
+
+async function getUserPosts({ username }: { username: string }) {
+  return await prisma.post.findMany({
+    where: {
+      author: {
+        username: username,
+      },
+    },
+  });
+}
+
+async function getPostComments({ postId }: { postId: number }) {
+  return await prisma.comment.findMany({
+    where: {
+      postId: postId,
+    },
+    select: {
+      content: true,
+      createAt: true,
+      user: {
+        select: {
+          username: true,
+          avatarUrl: true,
+          isVerified: true,
+        },
+      },
+    },
+  });
+}
+
+async function getFollowersList({ username }: { username: string }) {
+  return await prisma.following.findMany({
+    where: {
+      followee: {
+        username: username,
+      },
+    },
+    select: {
+      follower: {
+        select: {
+          username: true,
+          avatarUrl: true,
+        },
+      },
+    },
+  });
+}
+
+async function getFollowingsList({ username }: { username: string }) {
+  return await prisma.following.findMany({
+    where: {
+      follower: {
+        username: username,
+      },
+    },
+    select: {
+      followee: {
+        select: {
+          username: true,
+          avatarUrl: true,
+        },
+      },
+    },
+  });
+}
+
+async function getPost({ postId }: { postId: number }) {
+  return await prisma.post.findFirst({
+    where: {
+      id: postId,
+    },
+    select: {
+      author: {
+        select: {
+          username: true,
+          avatarUrl: true,
+          isVerified: true,
+        },
+      },
+      content: true,
+      id: true,
+      createAt: true,
+      pictureUrls: true,
+      _count: {
+        select: {
+          reactions: true,
+          comments: true,
+        },
+      },
     },
   });
 }
