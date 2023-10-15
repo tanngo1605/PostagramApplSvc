@@ -101,89 +101,10 @@ app.use(
 
 app.post("/rpc/:rpcMethodId", async (req: Request, res: Response) => {
   const { rpcMethodId } = req.params;
-  switch (rpcMethodId) {
-    case "sayHello": {
-      res.send(rpcMethods.sayHello(req.body));
-      break;
-    }
-    case "getUserToken": {
-      const token = await rpcMethods.getUserToken(req.body);
-      res.status(200).json({
-        result: token,
-      });
-      break;
-    }
-    case "createPost": {
-      const post = await rpcMethods.createPost(req.body);
-      res.status(200).json({
-        result: post,
-      });
-      break;
-    }
-    case "getUserInfo": {
-      const user = await rpcMethods.getUserInfo(req.body);
-      res.status(200).json({
-        result: user,
-      });
-      break;
-    }
-    case "addComment": {
-      const comment = await rpcMethods.addComment(req.body);
-      res.status(200).json({
-        result: comment,
-      });
-      break;
-    }
-    case "addReaction": {
-      const reaction = await rpcMethods.addReaction(req.body);
-      res.status(200).json({
-        result: reaction,
-      });
-      break;
-    }
-    case "addFollowing": {
-      const following = await rpcMethods.addFollowing(req.body);
-      res.status(200).json({
-        result: following,
-      });
-      break;
-    }
-    case "getUserPosts": {
-      const posts = await rpcMethods.getUserPosts(req.body);
-      res.status(200).json({
-        result: posts,
-      });
-      break;
-    }
-    case "getPostComments": {
-      const comments = await rpcMethods.getPostComments(req.body);
-      res.status(200).json({
-        result: comments,
-      });
-      break;
-    }
-    case "getFollowersList": {
-      const followersList = await rpcMethods.getFollowersList(req.body);
-      res.status(200).json({
-        result: followersList,
-      });
-      break;
-    }
-    case "getFollowingsList": {
-      const followeesList = await rpcMethods.getFollowingsList(req.body);
-      res.status(200).json({
-        result: followeesList,
-      });
-      break;
-    }
-    case "getPost": {
-      const post = await rpcMethods.getPost(req.body);
-      res.status(200).json({
-        result: post,
-      });
-      break;
-    }
-  }
+  const result: any = await rpcMethods[rpcMethodId](req.body);
+  return res.status(200).json({
+    result,
+  });
 });
 
 app.get("/rpc/all", (req: Request, res: Response) => {
@@ -201,7 +122,7 @@ process.on("SIGTERM", () => {
   });
 });
 
-const rpcMethods = {
+const rpcMethods: RpcMethodsType = {
   sayHello,
   getUserToken,
   createPost,
@@ -214,6 +135,10 @@ const rpcMethods = {
   getFollowersList,
   getFollowingsList,
   getPost,
+};
+
+type RpcMethodsType = {
+  [key: string]: any;
 };
 
 function sayHello({ username }: { username: string }): string {
@@ -282,6 +207,7 @@ async function getUserInfo({ username }: { username: string }) {
         select: {
           followers: true,
           followings: true,
+          posts: true,
         },
       },
     },
