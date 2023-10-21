@@ -1,7 +1,7 @@
 const MY_JWT_SECRET = "MY_JWT_SECRET";
 import jwt from "jsonwebtoken";
 import prisma from "../prisma/prismaDB";
-import express, { Request, Response } from "express";
+import express, { NextFunction, Request, Response } from "express";
 import logger from "morgan";
 import actuator from "express-actuator";
 const PORT = process.env.PORT || 3000;
@@ -14,6 +14,16 @@ app.use(
     infoGitMode: "full",
     infoBuildOptions: {
       rpcMethods: {
+        createUser: {
+          params: {
+            username: "string",
+            displayName: "string",
+            userPassword: "string",
+            avatarUrl: "string",
+            isVerified: "boolean",
+          },
+          returnType: "user",
+        },
         sayHello: {
           params: {
             username: "string",
@@ -96,10 +106,21 @@ app.use(
         },
       },
     },
+    customEndpoints: [
+      {
+        id: "CPU",
+        controller: (req, res) => {},
+      },
+    ],
   })
 );
+const catchAsync = (fn: Function) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    fn(req, res, next).catch(next);
+  };
+};
 
-app.post("/rpc/:rpcMethodId", async (req: Request, res: Response) => {
+const rpcHandler = async (req: Request, res: Response, next: NextFunction) => {
   const { rpcMethodId } = req.params;
   if (rpcMethods[rpcMethodId] == null) {
     return res.status(404).json({
@@ -110,10 +131,20 @@ app.post("/rpc/:rpcMethodId", async (req: Request, res: Response) => {
   return res.status(200).json({
     result,
   });
-});
+};
+
+app.post("/rpc/:rpcMethodId", catchAsync(rpcHandler));
 
 app.get("/rpc/all", (req: Request, res: Response) => {
   res.send(Object.keys(rpcMethods));
+});
+
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  console.error({ err });
+  console.error({ requestBody: req.body });
+  res.status(500).json({
+    errorMessage: err,
+  });
 });
 
 const runningServer = app.listen(PORT, () => {
@@ -140,11 +171,36 @@ const rpcMethods: RpcMethodsType = {
   getFollowersList,
   getFollowingsList,
   getPost,
+  createUser,
 };
 
 type RpcMethodsType = {
   [key: string]: Function;
 };
+
+async function createUser({
+  username,
+  displayName,
+  userPassword,
+  avatarUrl,
+  isVerified,
+}: {
+  username: string;
+  displayName: string;
+  userPassword: string;
+  avatarUrl: string;
+  isVerified: boolean;
+}) {
+  return await prisma.user.create({
+    data: {
+      username,
+      displayName,
+      userPassword,
+      avatarUrl,
+      isVerified,
+    },
+  });
+}
 
 function sayHello({ username }: { username: string }): string {
   return "Hello " + username;
